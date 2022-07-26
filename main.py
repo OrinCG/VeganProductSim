@@ -27,6 +27,7 @@ class AnimalGameGui:
         # self.middle.pack()
         # self.bottom.pack()
         self.graph = None
+        self.update_graph = None
         self.show_bar()
 
     def start_sim(self):
@@ -55,16 +56,14 @@ class AnimalGameGui:
 
         # Update the graph as the values change
         def graph_ani(frame):
-            # rects[1].set_height(rects[1].get_height() + 30)
-            # print(rects[1].get_height())
-            # figure_canvas.draw()
-            new_vals = map(lambda x: x + 10, data.values())
-            rects = axes.bar(data.keys, new_vals)
+            new_vals = list(map(lambda x: x + 10, data.values()))
+            print(new_vals)
+            rects = axes.bar(data.keys(), new_vals)
 
-        update_graph = animation.FuncAnimation(figure, graph_ani, 500)
+        self.update_graph = animation.FuncAnimation(figure, graph_ani, 500)
 
         test_button = tk.Button(self.window, text="Increase bar 1",
-                                command=lambda: increaseHeight()
+                                command=lambda: graph_ani()
                                 )
         test_button.grid_anchor("s")
         test_button.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
