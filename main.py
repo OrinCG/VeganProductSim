@@ -22,10 +22,10 @@ class AnimalGameGui:
         self.product2_sold = 39
         self.product3_sold = 199
 
-        self.data = {
-            'P1': self.product1_sold,
-            'P2': self.product2_sold,
-            'P3': self.product3_sold
+        self._data = {
+            'P1': self.get_product1_sold,
+            'P2': self.get_product2_sold,
+            'P3': self.get_product3_sold
         }
 
         self.window = tk.Tk()
@@ -37,11 +37,24 @@ class AnimalGameGui:
         self.update_graph = None
         self.show_bar()
 
+    @property
+    def data(self):
+        return dict(zip(self._data.keys(),list(map(lambda val: val(), self._data.values()))))
+
+    def get_product1_sold(self):
+        return self.product1_sold
+
+    def get_product2_sold(self):
+        return self.product2_sold
+
+    def get_product3_sold(self):
+        return self.product3_sold
+
     def start_sim(self):
         self.window.mainloop()
 
     def show_bar(self):
-
+# I'm sorry
 
         figure = Figure(figsize=(6, 4), dpi=100)
         # create FigureCanvasTkAgg object
@@ -61,9 +74,11 @@ class AnimalGameGui:
         def graph_ani(frame):
             bar_labels = list(map(lambda x: x.get_text(),axes.get_xticklabels()))
             print(bar_labels)
+            self.product1_sold += 50
             for i in range(0,len(bar_labels)):
-                rects[i].set_height(rects[i].get_height()+10)
-            axes.set(ylim=(0,max(list(map(lambda x: x.get_height(),rects)))))
+                print(bar_labels[i] + " value" + str(self.data.get(bar_labels[i])))
+                rects[i].set_height(self.data.get(bar_labels[i]))
+            axes.set(ylim=(0,max(list(map(lambda x: x.get_height() + 10,rects)))))
         self.update_graph = animation.FuncAnimation(figure, graph_ani, 100)
 
         test_button = tk.Button(self.window, text="Increase bar 1",
