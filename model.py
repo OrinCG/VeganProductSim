@@ -1,3 +1,5 @@
+import time
+
 import pymoo
 import numpy as np
 import random
@@ -6,20 +8,22 @@ import mesa
 import pymoo.core.problem as pyProb
 
 
-def get_avg (item_list, attribute):
+def get_avg(item_list, attribute):
     return sum(list(map(lambda p: getattr(p, attribute), item_list))) / len(item_list)
 
+
 def normalise(products):
-    avg_cost = get_avg(products,"cost")
+    avg_cost = get_avg(products, "cost")
     for product in products:
         product.cost = product.cost / avg_cost
 
 
 class Model(mesa.Model):
 
-    def __init__(self, no_agents, opinion_change_rate):
+    def __init__(self, no_agents, opinion_change_rate, view):
         self.no_agents = no_agents
         self.opinion_change_rate = opinion_change_rate
+        self.view = view
         self.schedule = mesa.time.RandomActivation(self)
         for i in range(self.no_agents):
             agent = Agent(i, self)
@@ -29,7 +33,7 @@ class Model(mesa.Model):
         for a in self.schedule.agents:
             i = random.randint(0, self.no_agents - 1)
             i2 = random.randint(0, self.no_agents - 1)
-            a.__getattribute__("friends").extend([i, i2])
+            a.__getattribute__("friends").extend([self.schedule.agents[i], self.schedule.agents[i2]])
             print(a.__getattribute__("friends"))
 
         self.products = [Product("Organic Pea Meat", 10.60, 20), Product("Fake chicken", 7, 50),
@@ -40,13 +44,11 @@ class Model(mesa.Model):
     def step(self):
         self.schedule.step()
 
-
     def run(self):
         for i in range(10):
             self.step()
-            #Update view
-
-
+            self.view.update_scores(list(map(lambda p: p.sold, self.products)))
+           # time.sleep(1000)
 
 
 class Agent(mesa.Agent):
@@ -59,13 +61,13 @@ class Agent(mesa.Agent):
 
     def step(self) -> None:
         self.exchange_opinions()
+        products = self.model.__getattribute__("products")
+        product_scores = list(map(self.calcScore(), products))
+        products[product_scores.index(max(product_scores))].sold += 1
 
-        product_scores = list(map(self.calcScore(), self.model.__getattribute__("products")))
-        max(product_scores).sold += 1
-
-    #Alter this agents scores to be a little closer to a friends
+    # Alter this agents scores to be a little closer to a friends
     def exchange_opinions(self):
-        exchange_f = self.friends[random.randint(0, len(self.friends))]
+        exchange_f = self.friends[random.randint(0, len(self.friends)-1)]
         ex_f_env = exchange_f.__getattribute__("envScore")
         ex_f_cost = exchange_f.__getattribute__("costScore")
         op_change_rate = self.model.__getattribute__("opinion_change_rate")
@@ -83,7 +85,7 @@ class Agent(mesa.Agent):
     def calcScore(self):
         products = self.model.__getattribute__("products")
         return lambda prod: ((100 - prod.env_impact) * self.envScore) / 100 + (
-                prod.cost * self.costScore) #Max env impact is 100 , should change to not be hard coded
+                prod.cost * self.costScore)  # Max env impact is 100 , should change to not be hard coded
 
 
 class Product:
