@@ -98,11 +98,9 @@ class ProductSimView:
         test_button.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=1)
 
     def update_scores(self, products_sold):
-        print(self.product1_sold, self.product2_sold, self.product3_sold)
         self.product1_sold = products_sold[0]
-        self.product1_sold = products_sold[1]
-        self.product1_sold = products_sold[2]
-        print(self.product1_sold, self.product2_sold, self.product3_sold)
+        self.product2_sold = products_sold[1]
+        self.product3_sold = products_sold[2]
 
     # def get_P1(self):
     #     return self.product1_sold

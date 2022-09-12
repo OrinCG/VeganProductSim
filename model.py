@@ -36,18 +36,22 @@ class Model(mesa.Model):
             a.__getattribute__("friends").extend([self.schedule.agents[i], self.schedule.agents[i2]])
             print(a.__getattribute__("friends"))
 
-        self.products = [Product("Organic Pea Meat", 10.60, 20), Product("Fake chicken", 7, 50),
+        self.products = [Product("Organic Pea Meat", 7, 35), Product("Fake chicken", 2.3, 75),
                          Product("Soy meat", 2.50, 80)]
         normalise(self.products)
         print(self.products)
 
     def step(self):
         self.schedule.step()
+        print(list(map(lambda p: p.sold, self.products)))
+        for agent in self.schedule.agents:
+            print(agent.__getattribute__("envScore"),agent.__getattribute__("costScore"))
 
     def run(self):
         for i in range(10):
             self.step()
-            self.results.append(list(map(lambda p: p.sold, self.products)))
+            p_values = list(map(lambda p: p.sold, self.products))
+            self.results.append(p_values)
            # self.view.update_scores(list(map(lambda p: p.sold, self.products)))
 
 
@@ -58,12 +62,18 @@ class Agent(mesa.Agent):
         self.envScore = random.random()
         self.friends = []
         self.costScore = 1 - self.envScore
+        self.money_spent = 0
+        self.total_env_imp = 0
 
     def step(self) -> None:
         self.exchange_opinions()
         products = self.model.__getattribute__("products")
         product_scores = list(map(self.calcScore(), products))
-        products[product_scores.index(max(product_scores))].sold += 1
+        print(product_scores, "SCORES")
+        chosen_product = products[product_scores.index(max(product_scores))]
+        chosen_product.sold += 1
+        self.money_spent += chosen_product.cost
+        self.total_env_imp += chosen_product.env_impact
 
     # Alter this agents scores to be a little closer to a friends
     def exchange_opinions(self):
@@ -83,9 +93,8 @@ class Agent(mesa.Agent):
             self.envScore -= env_change
 
     def calcScore(self):
-        products = self.model.__getattribute__("products")
-        return lambda prod: ((100 - prod.env_impact) * self.envScore) / 100 + (
-                prod.cost * self.costScore)  # Max env impact is 100 , should change to not be hard coded
+        return lambda prod: (( - prod.env_impact) * self.envScore) / 100 + (
+                -prod.cost * self.costScore)  # Max env impact is 100 , should change to not be hard coded
 
 
 class Product:
