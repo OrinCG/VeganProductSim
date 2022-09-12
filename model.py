@@ -20,10 +20,10 @@ def normalise(products):
 
 class Model(mesa.Model):
 
-    def __init__(self, no_agents, opinion_change_rate, view):
+    def __init__(self, no_agents, opinion_change_rate):
         self.no_agents = no_agents
         self.opinion_change_rate = opinion_change_rate
-        self.view = view
+        self.results = []
         self.schedule = mesa.time.RandomActivation(self)
         for i in range(self.no_agents):
             agent = Agent(i, self)
@@ -47,8 +47,8 @@ class Model(mesa.Model):
     def run(self):
         for i in range(10):
             self.step()
-            self.view.update_scores(list(map(lambda p: p.sold, self.products)))
-           # time.sleep(1000)
+            self.results.append(list(map(lambda p: p.sold, self.products)))
+           # self.view.update_scores(list(map(lambda p: p.sold, self.products)))
 
 
 class Agent(mesa.Agent):
