@@ -17,6 +17,7 @@ from tkinter import ttk
 # Refactor this so that it requests info from the model.
 class ProductSimView:
     def __init__(self, no_agents, results):
+        self.runs_displayed = 0
         self.no_agents = no_agents
         self.product1_sold = 0
         self.product2_sold = 0
@@ -79,9 +80,15 @@ class ProductSimView:
         steps_taken = 0
         # Update the graph as the values change
         def graph_ani(frame):
-            if( self.steps_taken < len(self.model_vals)):
-                self.update_scores(self.model_vals[self.steps_taken])
+            if self.runs_displayed >= len(self.model_vals):
+                self.update_graph.pause()
+            elif self.steps_taken < len(self.model_vals[self.runs_displayed]):
+                self.update_scores(self.model_vals[self.runs_displayed][self.steps_taken])
                 self.steps_taken += 1
+            elif self.runs_displayed < len(self.model_vals):
+                self.steps_taken = 0
+                self.runs_displayed += 1
+
             bar_labels = list(map(lambda x: x.get_text(), axes.get_xticklabels()))
             print(bar_labels)
             for i in range(0, len(bar_labels)):
